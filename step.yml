@@ -1,0 +1,59 @@
+title: "Xamarin android Test"
+summary: Xamarin android Test
+description: |-
+  Xamarin android Test
+website: https://github.com/bitrise-io/steps-xamarin-android-test
+source_code_url: https://github.com/bitrise-io/steps-xamarin-android-test
+support_url: https://github.com/bitrise-io/steps-xamarin-android-test/issues
+host_os_tags:
+  - osx-10.10
+project_type_tags:
+  - android
+type_tags: []
+is_requires_admin_user: false
+is_always_run: false
+is_skippable: false
+dependencies: []
+run_if: ""
+inputs:
+  - xamarin_project:
+    opts:
+      title: Path to Xamarin Project
+      description: |
+        Path to Xamarin Project
+      is_required: true
+      is_expand: true
+  - xamarin_test_project:
+    opts:
+      title: Path to Xamarin UITest Project
+      description: |
+        Path to Xamarin UITest Project
+      is_required: true
+      is_expand: true
+  - is_clean_build: "yes"
+    opts:
+      title: "Do a clean before the archive?"
+      value_options:
+        - "yes"
+        - "no"
+      is_required: true
+      is_expand: true
+      is_dont_change_value: false
+  - emulator_serial:
+    opts:
+      title: "Emulator serial to boot"
+      description: |
+        Emulator to boot
+      is_required: true
+      is_expand: true
+outputs:
+- BITRISE_XAMARIN_TEST_RESULT:
+  opts:
+    title: Result of the tests. 'succeeded' or 'failed'.
+    value_options:
+    - succeeded
+    - failed
+- BITRISE_XAMARIN_TEST_FULL_RESULTS_TEXT:
+  opts:
+    title: ""
+    description: ""

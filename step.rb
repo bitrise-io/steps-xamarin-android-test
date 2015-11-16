@@ -17,6 +17,26 @@ def error_with_message(message)
   puts "\e[31m#{message}\e[0m"
 end
 
+def get_related_solutions(project_path)
+  project_name = File.basename(project_path)
+  project_dir = File.dirname(project_path)
+  root_dir = File.dirname(project_dir)
+  solutions = Dir[File.join(root_dir, '/**/*.sln')]
+  return [] unless solutions
+
+  related_solutions = []
+  solutions.each do |solution|
+    File.readlines(solution).join("\n").scan(/Project\(\"[^\"]*\"\)\s*=\s*\"[^\"]*\",\s*\"([^\"]*.csproj)\"/).each do |match|
+      a_project = match[0].strip.gsub(/\\/, '/')
+      a_project_name = File.basename(a_project)
+
+      related_solutions << solution if a_project_name == project_name
+    end
+  end
+
+  return related_solutions
+end
+
 def build_project!(project_path)
   xbuild = '/Library/Frameworks/Mono.framework/Versions/Current/bin/xbuild'
   output_dir = File.join('bin', 'Release')
@@ -150,16 +170,32 @@ puts " * emulator_serial: #{options[:emulator_serial]}"
 #
 # Restoring nuget packages
 puts ''
-puts '==> Restoring project nuget packages'
-puts "/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{options[:project]}"
-system("/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{options[:project]}")
-error_with_message('Failed to restore nuget package') unless $?.success?
+puts "==> Restoring project nuget packages for project: #{options[:project]}"
+solutions = get_related_solutions(options[:project])
+if solutions && solutions.count > 0
+  solutions.each do |solution|
+    puts "(i) solution: #{solution}"
+    puts "/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{solution}"
+    system("/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{solution}")
+    error_with_message('Failed to restore nuget package') unless $?.success?
+  end
+else
+  puts "No solution found for project: #{options[:project]}, terminating nuget restore..."
+end
 
 puts ''
-puts '==> Restoring test project nuget packages'
-puts "/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{options[:test_project]}"
-system("/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{options[:test_project]}")
-error_with_message('Failed to restore nuget package') unless $?.success?
+puts "==> Restoring project nuget packages for project: #{options[:test_project]}"
+solutions = get_related_solutions(options[:test_project])
+if solutions && solutions.count > 0
+  solutions.each do |solution|
+    puts "(i) solution: #{solution}"
+    puts "/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{solution}"
+    system("/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{solution}")
+    error_with_message('Failed to restore nuget package') unless $?.success?
+  end
+else
+  puts "No solution found for project: #{options[:test_project]}, terminating nuget restore..."
+end
 
 if options[:clean_build]
   #

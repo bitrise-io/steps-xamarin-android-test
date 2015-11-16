@@ -170,7 +170,7 @@ puts " * emulator_serial: #{options[:emulator_serial]}"
 #
 # Restoring nuget packages
 puts ''
-puts "==> Restoring project nuget packages for project: #{options[:project]}"
+puts "==> Restoring nuget packages for project: #{options[:project]}"
 solutions = get_related_solutions(options[:project])
 if solutions && solutions.count > 0
   solutions.each do |solution|
@@ -184,7 +184,7 @@ else
 end
 
 puts ''
-puts "==> Restoring project nuget packages for project: #{options[:test_project]}"
+puts "==> Restoring nuget packages for project: #{options[:test_project]}"
 solutions = get_related_solutions(options[:test_project])
 if solutions && solutions.count > 0
   solutions.each do |solution|

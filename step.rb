@@ -150,9 +150,15 @@ puts " * emulator_serial: #{options[:emulator_serial]}"
 #
 # Restoring nuget packages
 puts ''
-puts '==> Restoring nuget packages'
+puts '==> Restoring project nuget packages'
 puts "/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{options[:project]}"
 system("/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{options[:project]}")
+error_with_message('Failed to restore nuget package') unless $?.success?
+
+puts ''
+puts '==> Restoring test project nuget packages'
+puts "/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{options[:test_project]}"
+system("/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{options[:test_project]}")
 error_with_message('Failed to restore nuget package') unless $?.success?
 
 if options[:clean_build]

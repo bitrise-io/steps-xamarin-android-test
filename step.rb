@@ -2,6 +2,10 @@ require 'optparse'
 require 'pathname'
 require 'timeout'
 
+@configuration = 'Release'
+@mono = '/Library/Frameworks/Mono.framework/Versions/Current/bin/mono'
+@nuget = '/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget'
+
 # -----------------------
 # --- functions
 # -----------------------
@@ -15,6 +19,12 @@ end
 
 def error_with_message(message)
   puts "\e[31m#{message}\e[0m"
+end
+
+def to_bool(value)
+  return true if value == true || value =~ (/^(true|t|yes|y|1)$/i)
+  return false if value == false || value.nil? || value =~ (/^(false|f|no|n|0)$/i)
+  fail_with_message("Invalid value for Boolean: \"#{value}\"")
 end
 
 def get_related_solutions(project_path)
@@ -38,13 +48,12 @@ def get_related_solutions(project_path)
 end
 
 def build_project!(project_path)
-  xbuild = '/Library/Frameworks/Mono.framework/Versions/Current/bin/xbuild'
-  output_dir = File.join('bin', 'Release')
+  output_dir = File.join('bin', @configuration)
 
-  params = ["#{xbuild}"]
+  params = ['xbuild']
   params << "\"#{project_path}\""
   params << '/t:PackageForAndroid'
-  params << '/p:Configuration=Release'
+  params << "/p:Configuration=#{@configuration}"
   params << "/p:OutputPath=\"#{output_dir}/\""
 
   # Build project
@@ -58,13 +67,12 @@ def build_project!(project_path)
 end
 
 def build_test_project!(project_path)
-  xbuild = '/Library/Frameworks/Mono.framework/Versions/Current/bin/xbuild'
-  output_dir = File.join('bin', 'Release')
+  output_dir = File.join('bin', @configuration)
 
-  params = ["#{xbuild}"]
+  params = ['xbuild']
   params << "\"#{project_path}\""
   params << '/t:Build'
-  params << '/p:Configuration=Release'
+  params << "/p:Configuration=#{@configuration}"
   params << "/p:OutputPath=\"#{output_dir}/\""
 
   # Build project
@@ -77,14 +85,11 @@ def build_test_project!(project_path)
   File.join(project_directory, output_dir)
 end
 
-
 def clean_project!(project_path)
-  xbuild = '/Library/Frameworks/Mono.framework/Versions/Current/bin/xbuild'
-
-  params = ["\"#{xbuild}\""]
+  params = ['xbuild']
   params << "\"#{project_path}\""
   params << '/t:Clean'
-  params << "/p:Configuration='Release'"
+  params << "/p:Configuration=#{@configuration}"
 
   # clean project
   puts "#{params.join(' ')}"
@@ -113,17 +118,14 @@ def export_dll(test_build_path)
 end
 
 def run_unit_test!(nunit_console_path, dll_path)
-  mono = '/Library/Frameworks/Mono.framework/Versions/Current/bin/mono'
-  out = `#{mono} #{nunit_console_path} #{dll_path}`
-  puts out
-  fail_with_message("#{mono} #{nunit_console_path} #{dll_path} -- failed") unless $?.success?
+  # nunit-console.exe Test.dll /xml=Test-results.xml /out=Test-output.txt
+  
+  nunit_path = ENV['NUNIT_PATH']
+  fail_with_message('No NUNIT_PATH environment specified') unless nunit_path
 
-  regex = 'Tests run: (?<total>\d*), Errors: (?<errors>\d*), Failures: (?<failures>\d*), Inconclusive: (?<inconclusives>\d*), Time: (?<time>\S*) seconds\n  Not run: (?<not_run>\d*), Invalid: (?<invalid>\d*), Ignored: (?<ignored>\d*), Skipped: (?<skipped>\d*)'
-  match = out.match(regex)
-  unless match.nil?
-    _total, errors, failures, _inconclusives, _time, _not_run, _invalid, _ignored, _skipped = match.captures
-    fail_with_message("#{mono} #{nunit_console_path} #{dll_path} -- failed") unless errors.to_i == 0 && failures.to_i == 0
-  end
+  nunit_console_path = File.join(nunit_path, 'bin/nunit3-console.exe')
+  system("#{@mono} #{nunit_console_path} #{dll_path}")
+  fail_with_message("#{@mono} #{nunit_console_path} #{dll_path} -- failed") unless $?.success?
 end
 
 # -----------------------
@@ -136,16 +138,14 @@ options = {
   project: nil,
   test_project: nil,
   clean_build: true,
-  emulator_serial: nil,
-  nunit_path: nil
+  emulator_serial: nil
 }
 
 parser = OptionParser.new do|opts|
   opts.banner = 'Usage: step.rb [options]'
   opts.on('-s', '--project path', 'Project path') { |s| options[:project] = s unless s.to_s == '' }
   opts.on('-t', '--test project', 'Test project') { |t| options[:test_project] = t unless t.to_s == '' }
-  opts.on('-i', '--clean build', 'Clean build') { |i| options[:clean_build] = false if i.to_s == 'no' }
-  opts.on('-n', '--nunit path', 'NUnit path') { |n| options[:nunit_path] = n unless n.to_s == '' }
+  opts.on('-i', '--clean build', 'Clean build') { |i| options[:clean_build] = false if to_bool(i) == false }
   opts.on('-e', '--emulator serial', 'Emulator serial') { |e| options[:emulator_serial] = e unless e.to_s == '' }
   opts.on('-h', '--help', 'Displays Help') do
     exit
@@ -153,10 +153,9 @@ parser = OptionParser.new do|opts|
 end
 parser.parse!
 
-fail_with_message('project not specified') unless options[:project]
-fail_with_message('test_project not specified') unless options[:test_project]
+fail_with_message('No project file found') unless options[:project] && File.exist?(options[:project])
+fail_with_message('No test_project file found') unless options[:test_project] && File.exist?(options[:test_project])
 fail_with_message('emulator_serial not specified') unless options[:emulator_serial]
-fail_with_message('nunit_console_path not specified') unless options[:nunit_path]
 
 #
 # Print configs
@@ -170,31 +169,19 @@ puts " * emulator_serial: #{options[:emulator_serial]}"
 #
 # Restoring nuget packages
 puts ''
-puts "==> Restoring nuget packages for project: #{options[:project]}"
-solutions = get_related_solutions(options[:project])
-if solutions && solutions.count > 0
-  solutions.each do |solution|
-    puts "(i) solution: #{solution}"
-    puts "/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{solution}"
-    system("/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{solution}")
-    error_with_message('Failed to restore nuget package') unless $?.success?
-  end
-else
-  puts "No solution found for project: #{options[:project]}, terminating nuget restore..."
-end
+puts '==> Restoring nuget packages'
+project_solutions = get_related_solutions(options[:project])
+puts "No solution found for project: #{options[:project]}, terminating nuget restore..." if project_solutions.empty?
 
-puts ''
-puts "==> Restoring nuget packages for project: #{options[:test_project]}"
-solutions = get_related_solutions(options[:test_project])
-if solutions && solutions.count > 0
-  solutions.each do |solution|
-    puts "(i) solution: #{solution}"
-    puts "/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{solution}"
-    system("/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget restore #{solution}")
-    error_with_message('Failed to restore nuget package') unless $?.success?
-  end
-else
-  puts "No solution found for project: #{options[:test_project]}, terminating nuget restore..."
+test_project_solutions = get_related_solutions(options[:test_project])
+puts "No solution found for project: #{options[:test_project]}, terminating nuget restore..." if test_project_solutions.empty?
+
+solutions = project_solutions | test_project_solutions
+solutions.each do |solution|
+  puts "(i) solution: #{solution}"
+  puts "#{@nuget} restore #{solution}"
+  system("#{@nuget} restore #{solution}")
+  error_with_message('Failed to restore nuget package') unless $?.success?
 end
 
 if options[:clean_build]

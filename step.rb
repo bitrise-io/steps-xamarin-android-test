@@ -118,6 +118,8 @@ def export_dll(test_build_path)
 end
 
 def run_unit_test!(nunit_console_path, dll_path)
+  # nunit-console.exe Test.dll /xml=Test-results.xml /out=Test-output.txt
+  
   nunit_path = ENV['NUNIT_PATH']
   fail_with_message('No NUNIT_PATH environment specified') unless nunit_path
 

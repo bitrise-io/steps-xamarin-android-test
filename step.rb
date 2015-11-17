@@ -151,8 +151,8 @@ parser = OptionParser.new do|opts|
 end
 parser.parse!
 
-fail_with_message('project not specified') unless options[:project] && File.exist?(options[:project])
-fail_with_message('test_project not specified') unless options[:test_project] && File.exist?(options[:test_project])
+fail_with_message('No project file found') unless options[:project] && File.exist?(options[:project])
+fail_with_message('No test_project file found') unless options[:test_project] && File.exist?(options[:test_project])
 fail_with_message('emulator_serial not specified') unless options[:emulator_serial]
 
 #

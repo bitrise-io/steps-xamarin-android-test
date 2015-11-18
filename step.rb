@@ -119,11 +119,11 @@ end
 
 def run_unit_test!(nunit_console_path, dll_path)
   # nunit-console.exe Test.dll /xml=Test-results.xml /out=Test-output.txt
-  
+
   nunit_path = ENV['NUNIT_PATH']
   fail_with_message('No NUNIT_PATH environment specified') unless nunit_path
 
-  nunit_console_path = File.join(nunit_path, 'bin/nunit3-console.exe')
+  nunit_console_path = File.join(nunit_path, 'nunit3-console.exe')
   system("#{@mono} #{nunit_console_path} #{dll_path}")
   fail_with_message("#{@mono} #{nunit_console_path} #{dll_path} -- failed") unless $?.success?
 end

@@ -127,7 +127,17 @@ def run_unit_test!(nunit_console_path, dll_path)
 
   nunit_console_path = File.join(nunit_path, 'nunit3-console.exe')
   system("#{@mono} #{nunit_console_path} #{dll_path}")
-  fail_with_message("#{@mono} #{nunit_console_path} #{dll_path} -- failed") unless $?.success?
+  unless $?.success?
+    work_dir = ENV['BITRISE_SOURCE_DIR']
+    result_log = File.join(work_dir, 'TestResult.xml')
+    file = File.open(result_log)
+    contents = file.read
+    file.close
+    puts
+    puts "result: #{contents}"
+    puts
+    fail_with_message("#{@mono} #{nunit_console_path} #{dll_path} -- failed")
+  end
 end
 
 # -----------------------
@@ -238,8 +248,15 @@ ENV['ANDROID_APK_PATH'] = apk_path
 
 run_unit_test!(options[:nunit_path], dll_path)
 
+#
 # Set output envs
 work_dir = ENV['BITRISE_SOURCE_DIR']
 result_log = File.join(work_dir, 'TestResult.xml')
+
+puts
+puts '(i) The result is: succeeded'
 system('envman add --key BITRISE_XAMARIN_TEST_RESULT --value succeeded') if work_dir
+
+puts
+puts "(i) The test log is available at: #{result_log}"
 system("envman add --key BITRISE_XAMARIN_TEST_FULL_RESULTS_TEXT --value #{result_log}") if work_dir

@@ -47,7 +47,7 @@ def get_related_solutions(project_path)
 end
 
 def build_project!(project_path, configuration, platform)
-  output_dir = File.join('bin', configuration)
+  output_dir = File.join('bin', platform, configuration)
 
   params = ['xbuild']
   params << "\"#{project_path}\""
@@ -67,7 +67,7 @@ def build_project!(project_path, configuration, platform)
 end
 
 def build_test_project!(project_path, configuration, platform)
-  output_dir = File.join('bin', configuration)
+  output_dir = File.join('bin', platform, configuration)
 
   params = ['xbuild']
   params << "\"#{project_path}\""

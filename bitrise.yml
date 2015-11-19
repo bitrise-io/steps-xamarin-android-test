@@ -1,23 +1,27 @@
 format_version: 1.0.0
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
-# app:
-#   envs:
-#   - XAMARIN_PROJECT:
-#   - XAMARIN_TEST_PROJECT:
-#   - EMULATOR_SERIAL:
+app:
+  envs:
+  - XAMARIN_PROJECT:
+  - XAMARIN_TEST_PROJECT:
+  - BITRISE_XAMARIN_CONFIGURATION:
+  - BITRISE_XAMARIN_PLATFORM:
+  - EMULATOR_SERIAL:
 
 workflows:
   test:
     steps:
     - path::./:
         inputs:
-        - xamarin_project: ${XAMARIN_PROJECT}
-        - xamarin_test_project: ${XAMARIN_TEST_PROJECT}
-        - is_clean_build: "yes"
+        - xamarin_project: $XAMARIN_PROJECT
+        - xamarin_test_project: $XAMARIN_TEST_PROJECT
+        - xamarin_configuration: $BITRISE_XAMARIN_CONFIGURATION
+        - xamarin_platform: $BITRISE_XAMARIN_PLATFORM
+        - is_clean_build: yes
         - emulator_serial: $EMULATOR_SERIAL
     - script:
         inputs:
         - content: |-
-            echo "BITRISE_XAMARIN_TEST_RESULT: ${BITRISE_XAMARIN_TEST_RESULT}"
-            echo "BITRISE_XAMARIN_TEST_FULL_RESULTS_TEXT: ${BITRISE_XAMARIN_TEST_FULL_RESULTS_TEXT}"
+            echo "BITRISE_XAMARIN_TEST_RESULT: $BITRISE_XAMARIN_TEST_RESULT"
+            echo "BITRISE_XAMARIN_TEST_FULL_RESULTS_TEXT: $BITRISE_XAMARIN_TEST_FULL_RESULTS_TEXT"

@@ -2,7 +2,6 @@ require 'optparse'
 require 'pathname'
 require 'timeout'
 
-@configuration = 'Release'
 @mono = '/Library/Frameworks/Mono.framework/Versions/Current/bin/mono'
 @nuget = '/Library/Frameworks/Mono.framework/Versions/Current/bin/nuget'
 
@@ -23,7 +22,7 @@ end
 
 def to_bool(value)
   return true if value == true || value =~ (/^(true|t|yes|y|1)$/i)
-  return false if value == false || value.nil? || value =~ (/^(false|f|no|n|0)$/i)
+  return false if value == false || value.nil? || value == '' || value =~ (/^(false|f|no|n|0)$/i)
   fail_with_message("Invalid value for Boolean: \"#{value}\"")
 end
 
@@ -47,13 +46,14 @@ def get_related_solutions(project_path)
   return related_solutions
 end
 
-def build_project!(project_path)
-  output_dir = File.join('bin', @configuration)
+def build_project!(project_path, configuration, platform)
+  output_dir = File.join('bin', platform, configuration)
 
   params = ['xbuild']
   params << "\"#{project_path}\""
   params << '/t:PackageForAndroid'
-  params << "/p:Configuration=#{@configuration}"
+  params << "/p:Configuration=\"#{configuration}\""
+  params << "/p:Platform=\"#{platform}\""
   params << "/p:OutputPath=\"#{output_dir}/\""
 
   # Build project
@@ -66,13 +66,14 @@ def build_project!(project_path)
   File.join(project_directory, output_dir)
 end
 
-def build_test_project!(project_path)
-  output_dir = File.join('bin', @configuration)
+def build_test_project!(project_path, configuration, platform)
+  output_dir = File.join('bin', platform, configuration)
 
   params = ['xbuild']
   params << "\"#{project_path}\""
   params << '/t:Build'
-  params << "/p:Configuration=#{@configuration}"
+  params << "/p:Configuration=#{configuration}"
+  params << "/p:Platform=\"#{platform}\""
   params << "/p:OutputPath=\"#{output_dir}/\""
 
   # Build project
@@ -85,11 +86,12 @@ def build_test_project!(project_path)
   File.join(project_directory, output_dir)
 end
 
-def clean_project!(project_path)
+def clean_project!(project_path, configuration, platform)
   params = ['xbuild']
   params << "\"#{project_path}\""
   params << '/t:Clean'
-  params << "/p:Configuration=#{@configuration}"
+  params << "/p:Configuration=#{configuration}"
+  params << "/p:Platform=\"#{platform}\""
 
   # clean project
   puts "#{params.join(' ')}"
@@ -137,6 +139,8 @@ end
 options = {
   project: nil,
   test_project: nil,
+  configuration: nil,
+  platform: nil,
   clean_build: true,
   emulator_serial: nil
 }
@@ -145,6 +149,8 @@ parser = OptionParser.new do|opts|
   opts.banner = 'Usage: step.rb [options]'
   opts.on('-s', '--project path', 'Project path') { |s| options[:project] = s unless s.to_s == '' }
   opts.on('-t', '--test project', 'Test project') { |t| options[:test_project] = t unless t.to_s == '' }
+  opts.on('-c', '--configuration config', 'Configuration') { |c| options[:configuration] = c unless c.to_s == '' }
+  opts.on('-p', '--platform platform', 'Platform') { |p| options[:platform] = p unless p.to_s == '' }
   opts.on('-i', '--clean build', 'Clean build') { |i| options[:clean_build] = false if to_bool(i) == false }
   opts.on('-e', '--emulator serial', 'Emulator serial') { |e| options[:emulator_serial] = e unless e.to_s == '' }
   opts.on('-h', '--help', 'Displays Help') do
@@ -155,6 +161,8 @@ parser.parse!
 
 fail_with_message('No project file found') unless options[:project] && File.exist?(options[:project])
 fail_with_message('No test_project file found') unless options[:test_project] && File.exist?(options[:test_project])
+fail_with_message('configuration not specified') unless options[:configuration]
+fail_with_message('platform not specified') unless options[:platform]
 fail_with_message('emulator_serial not specified') unless options[:emulator_serial]
 
 #
@@ -163,6 +171,8 @@ puts
 puts '========== Configs =========='
 puts " * project: #{options[:project]}"
 puts " * test_project: #{options[:test_project]}"
+puts " * configuration: #{options[:configuration]}"
+puts " * platform: #{options[:platform]}"
 puts " * clean_build: #{options[:clean_build]}"
 puts " * emulator_serial: #{options[:emulator_serial]}"
 
@@ -189,18 +199,18 @@ if options[:clean_build]
   # Cleaning the project
   puts
   puts "==> Cleaning project: #{options[:project]}"
-  clean_project!(options[:project])
+  clean_project!(options[:project], options[:configuration], options[:platform])
 
   puts
   puts "==> Cleaning project: #{options[:test_project]}"
-  clean_project!(options[:test_project])
+  clean_project!(options[:test_project], options[:configuration], options[:platform])
 end
 
 #
 # Build project
 puts
 puts "==> Building project: #{options[:project]}"
-build_path = build_project!(options[:project])
+build_path = build_project!(options[:project], options[:configuration], options[:platform])
 fail_with_message('Failed to locate build path') unless build_path
 
 apk_path = export_apk(build_path)
@@ -211,7 +221,7 @@ puts "  (i) .app path: #{apk_path}"
 # Build UITest
 puts
 puts "==> Building project: #{options[:test_project]}"
-test_build_path = build_test_project!(options[:test_project])
+test_build_path = build_test_project!(options[:test_project], options[:configuration], options[:platform])
 fail_with_message('failed to get test build path') unless test_build_path
 
 dll_path = export_dll(test_build_path)

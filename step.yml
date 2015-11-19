@@ -23,6 +23,7 @@ inputs:
         Path to Xamarin Project
       is_required: true
       is_expand: true
+      is_dont_change_value: false
   - xamarin_test_project:
     opts:
       title: Path to Xamarin UITest Project
@@ -30,12 +31,27 @@ inputs:
         Path to Xamarin UITest Project
       is_required: true
       is_expand: true
-  - is_clean_build: "yes"
+      is_dont_change_value: false
+  - xamarin_configuration: Debug
+    opts:
+      title: Xamarin project configuration
+      description: |
+        Xamarin project configuration
+      is_required: true
+      is_expand: true
+  - xamarin_platform: iPhoneSimulator
+    opts:
+      title: Xamarin platform
+      description: |
+        Xamarin platform
+      is_required: true
+      is_expand: true
+  - is_clean_build: yes
     opts:
       title: "Do a clean before the archive?"
       value_options:
-        - "yes"
-        - "no"
+        - yes
+        - no
       is_required: true
       is_expand: true
       is_dont_change_value: false
@@ -46,6 +62,7 @@ inputs:
         Emulator to boot
       is_required: true
       is_expand: true
+      is_dont_change_value: false
 outputs:
 - BITRISE_XAMARIN_TEST_RESULT:
   opts:

@@ -9,5 +9,7 @@ echo "==> Performing step"
 ruby "${THIS_SCRIPTDIR}/step.rb" \
 	-s "${xamarin_project}" \
 	-t "${xamarin_test_project}" \
+	-c "${xamarin_configuration}" \
+	-p "${xamarin_platform}" \
 	-i "${is_clean_build}" \
-	-e "${emulator_serial}" 
+	-e "${emulator_serial}"

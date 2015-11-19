@@ -22,7 +22,7 @@ end
 
 def to_bool(value)
   return true if value == true || value =~ (/^(true|t|yes|y|1)$/i)
-  return false if value == false || value.nil? || value =~ (/^(false|f|no|n|0)$/i)
+  return false if value == false || value.nil? || value == '' || value =~ (/^(false|f|no|n|0)$/i)
   fail_with_message("Invalid value for Boolean: \"#{value}\"")
 end
 

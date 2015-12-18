@@ -2,13 +2,13 @@ title: "Xamarin android Test"
 summary: Xamarin android Test
 description: |-
   Xamarin android Test
-website: https://github.com/bitrise-io/steps-xamarin-android-test
-source_code_url: https://github.com/bitrise-io/steps-xamarin-android-test
-support_url: https://github.com/bitrise-io/steps-xamarin-android-test/issues
+website: https://github.com/bitrise-steplib/steps-xamarin-android-test
+source_code_url: https://github.com/bitrise-steplib/steps-xamarin-android-test
+support_url: https://github.com/bitrise-steplib/steps-xamarin-android-test/issues
 host_os_tags:
   - osx-10.10
 project_type_tags:
-  - android
+  - xamarin
 type_tags: []
 is_requires_admin_user: false
 is_always_run: false
@@ -16,7 +16,7 @@ is_skippable: false
 dependencies: []
 run_if: ""
 inputs:
-  - xamarin_project:
+  - xamarin_project: $BITRISE_PROJECT_PATH
     opts:
       title: Path to Xamarin Project
       description: |
@@ -72,5 +72,5 @@ outputs:
     - failed
 - BITRISE_XAMARIN_TEST_FULL_RESULTS_TEXT:
   opts:
-    title: ""
+    title: Result of the tests.
     description: ""

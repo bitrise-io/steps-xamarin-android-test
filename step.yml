@@ -2,6 +2,19 @@ title: "Xamarin android Test"
 summary: Xamarin android Test
 description: |-
   Xamarin android Test
+
+  Use configuration-platform combination for automatig tests, which:
+  * Do not 'Use Shared Mono runtime' see: PROJECT_TO_TEST/Options/Build/Android Build/General/Packaging and Deployment
+  * Use 'Enable developer instarumentation (debugging and profiling)' see: PROJECT_TO_TEST/Options/Build/Android Build/General/Debugging Options
+
+  Add following to ConfigureApp.Android:
+  * string apkPath = Environment.GetEnvironmentVariable ("ANDROID_APK_PATH");
+  * string emulatorSerial = Environment.GetEnvironmentVariable ("ANDROID_EMULATOR_SERIAL"); // if more then one emulator running
+  * return ConfigureApp
+          .Android
+          .ApkFile (apkPath)
+          .DeviceSerial(emulatorSerial) // if more then one emulator running
+          .StartApp();
 website: https://github.com/bitrise-steplib/steps-xamarin-android-test
 source_code_url: https://github.com/bitrise-steplib/steps-xamarin-android-test
 support_url: https://github.com/bitrise-steplib/steps-xamarin-android-test/issues
@@ -24,14 +37,6 @@ inputs:
       is_required: true
       is_expand: true
       is_dont_change_value: false
-  - xamarin_test_project:
-    opts:
-      title: Path to Xamarin UITest Project
-      description: |
-        Path to Xamarin UITest Project
-      is_required: true
-      is_expand: true
-      is_dont_change_value: false
   - xamarin_configuration: Debug
     opts:
       title: Xamarin project configuration
@@ -39,7 +44,7 @@ inputs:
         Xamarin project configuration
       is_required: true
       is_expand: true
-  - xamarin_platform: AnyCPU
+  - xamarin_platform: Any CPU
     opts:
       title: Xamarin platform
       description: |
@@ -53,6 +58,15 @@ inputs:
         - yes
         - no
       is_required: true
+      is_expand: true
+      is_dont_change_value: false
+  - test_to_run:
+    opts:
+      title: "Test name to run"
+      description: |
+        Comma-separated list of names of tests to run.
+        If not specified all tests will run.
+      is_required: false
       is_expand: true
       is_dont_change_value: false
   - emulator_serial: $BITRISE_EMULATOR_SERIAL

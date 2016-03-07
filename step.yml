@@ -36,7 +36,6 @@ inputs:
         Path to Xamarin Project
       is_required: true
       is_expand: true
-      is_dont_change_value: false
   - xamarin_configuration: Debug
     opts:
       title: Xamarin project configuration
@@ -59,7 +58,6 @@ inputs:
         - no
       is_required: true
       is_expand: true
-      is_dont_change_value: false
   - test_to_run:
     opts:
       title: "Test name to run"
@@ -68,7 +66,6 @@ inputs:
         If not specified all tests will run.
       is_required: false
       is_expand: true
-      is_dont_change_value: false
   - emulator_serial: $BITRISE_EMULATOR_SERIAL
     opts:
       title: "Emulator serial to boot"
@@ -76,7 +73,6 @@ inputs:
         Emulator to boot
       is_required: true
       is_expand: true
-      is_dont_change_value: false
 outputs:
 - BITRISE_XAMARIN_TEST_RESULT:
   opts:

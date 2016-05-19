@@ -5,7 +5,7 @@ description: |-
 
   Use configuration-platform combination for automatig tests, which:
   * Do not 'Use Shared Mono runtime' see: PROJECT_TO_TEST/Options/Build/Android Build/General/Packaging and Deployment
-  * Use 'Enable developer instarumentation (debugging and profiling)' see: PROJECT_TO_TEST/Options/Build/Android Build/General/Debugging Options
+  # * Use 'Enable developer instarumentation (debugging and profiling)' see: PROJECT_TO_TEST/Options/Build/Android Build/General/Debugging Options
 
   Add following to ConfigureApp.Android:
   * string apkPath = Environment.GetEnvironmentVariable ("ANDROID_APK_PATH");
@@ -36,7 +36,7 @@ inputs:
         Path to Xamarin Project
       is_required: true
       is_expand: true
-  - xamarin_configuration: Debug
+  - xamarin_configuration: Release
     opts:
       title: Xamarin project configuration
       description: |
@@ -48,14 +48,6 @@ inputs:
       title: Xamarin platform
       description: |
         Xamarin platform
-      is_required: true
-      is_expand: true
-  - is_clean_build: yes
-    opts:
-      title: "Do a clean before the archive?"
-      value_options:
-        - yes
-        - no
       is_required: true
       is_expand: true
   - test_to_run:

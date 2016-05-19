@@ -139,7 +139,7 @@ output.each do |_, project_output|
 
   next if apk.nil? || uitests.nil?
 
-  ENV['ANDROID_APK_PATH'] = apk
+  ENV['ANDROID_APK_PATH'] = File.expand_path(apk)
 
   uitests.each do |dll_path|
     any_uitest_built = true

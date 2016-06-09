@@ -4,8 +4,6 @@ THIS_SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 set -e
 
-echo
-echo "==> Performing step"
 ruby "${THIS_SCRIPTDIR}/step.rb" \
 	-s "${xamarin_project}" \
 	-c "${xamarin_configuration}" \

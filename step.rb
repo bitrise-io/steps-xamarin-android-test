@@ -93,11 +93,12 @@ puts_fail('emulator_serial not specified') unless options[:emulator_serial]
 
 #
 # Main
-nunit_path = ENV['NUNIT_2_PATH']
-puts_fail('No NUNIT_2_PATH environment specified') unless nunit_path
+nunit_path = ENV['NUNIT_PATH']
+fail_with_message('No NUNIT_PATH environment specified') unless nunit_path
 
-nunit_console_path = File.join(nunit_path, 'nunit-console.exe')
-puts_fail('nunit-console.exe not found') unless File.exist?(nunit_console_path)
+nunit_console_path = File.join(nunit_path, 'nunit3-console.exe')
+fail_with_message('nunit3-console.exe not found') unless File.exist?(nunit_console_path)
+
 
 builder = Builder.new(options[:project], options[:configuration], options[:platform], 'android')
 begin
@@ -133,9 +134,10 @@ output.each do |_, project_output|
     params = [
       @mono,
       nunit_console_path,
+      '-verbose',
       dll_path
     ]
-    params << "run=\"#{options[:test_to_run]}\"" unless options[:test_to_run].nil?
+    params << "--test=\"#{options[:test_to_run]}\"" unless options[:test_to_run].nil?
 
     command = params.join(' ')
 

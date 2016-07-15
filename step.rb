@@ -100,7 +100,7 @@ nunit_console_path = File.join(nunit_path, 'nunit3-console.exe')
 puts_fail('nunit3-console.exe not found') unless File.exist?(nunit_console_path)
 
 
-builder = Builder.new(options[:project], options[:configuration], options[:platform], 'android')
+builder = Builder.new(options[:project], options[:configuration], options[:platform], [Api::ANDROID])
 begin
   builder.build_test
 rescue => ex

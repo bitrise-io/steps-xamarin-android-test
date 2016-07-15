@@ -4,6 +4,7 @@ require 'timeout'
 require 'nokogiri'
 
 require_relative 'xamarin-builder/builder'
+require_relative 'xamarin-builder/common_constants'
 
 # -----------------------
 # --- Constants
@@ -18,51 +19,32 @@ require_relative 'xamarin-builder/builder'
 # --- Functions
 # -----------------------
 
-def fail_with_message(message)
-  `envman add --key BITRISE_XAMARIN_TEST_RESULT --value failed`
+def puts_info(message)
+  puts
+  puts "\e[34m#{message}\e[0m"
+end
+
+def puts_details(message)
+  puts "  #{message}"
+end
+
+def puts_done(message)
+  puts "  \e[32m#{message}\e[0m"
+end
+
+def puts_warning(message)
+  puts "\e[33m#{message}\e[0m"
+end
+
+def puts_error(message)
+  puts "\e[31m#{message}\e[0m"
+end
+
+def puts_fail(message)
+  system('envman add --key BITRISE_XAMARIN_TEST_RESULT --value failed')
 
   puts "\e[31m#{message}\e[0m"
   exit(1)
-end
-
-def error_with_message(message)
-  puts "\e[31m#{message}\e[0m"
-end
-
-def to_bool(value)
-  return true if value == true || value =~ (/^(true|t|yes|y|1)$/i)
-  return false if value == false || value.nil? || value == '' || value =~ (/^(false|f|no|n|0)$/i)
-  fail_with_message("Invalid value for Boolean: \"#{value}\"")
-end
-
-def run_unit_test!(dll_path, test_to_run)
-  nunit_path = ENV['NUNIT_PATH']
-  fail_with_message('No NUNIT_PATH environment specified') unless nunit_path
-
-  nunit_console_path = File.join(nunit_path, 'nunit3-console.exe')
-
-  params = []
-  params << @mono
-  params << nunit_console_path
-  params << "--test=\"#{test_to_run}\"" unless test_to_run.to_s == ''
-  params << dll_path
-
-  command = params.join(' ')
-  puts "command: #{command}"
-
-  system(command)
-
-  unless $?.success?
-    file = File.open(@result_log_path)
-    contents = file.read
-    file.close
-
-    puts
-    puts "result: #{contents}"
-    puts
-
-    fail_with_message("#{command} -- failed")
-  end
 end
 
 # -----------------------
@@ -95,48 +77,50 @@ parser.parse!
 
 #
 # Print options
-puts
-puts '========== Configs =========='
-puts " * project: #{options[:project]}"
-puts " * configuration: #{options[:configuration]}"
-puts " * platform: #{options[:platform]}"
-puts " * test_to_run: #{options[:test_to_run]}"
-puts " * emulator_serial: #{options[:emulator_serial]}"
+puts_info 'Configs:'
+puts_details "* project: #{options[:project]}"
+puts_details "* configuration: #{options[:configuration]}"
+puts_details "* platform: #{options[:platform]}"
+puts_details "* test_to_run: #{options[:test_to_run]}"
+puts_details "* emulator_serial: #{options[:emulator_serial]}"
 
 #
 # Validate options
-fail_with_message('No project file found') unless options[:project] && File.exist?(options[:project])
-fail_with_message('configuration not specified') unless options[:configuration]
-fail_with_message('platform not specified') unless options[:platform]
-fail_with_message('emulator_serial not specified') unless options[:emulator_serial]
+puts_fail('No project file found') unless options[:project] && File.exist?(options[:project])
+puts_fail('configuration not specified') unless options[:configuration]
+puts_fail('platform not specified') unless options[:platform]
+puts_fail('emulator_serial not specified') unless options[:emulator_serial]
 
 #
 # Main
-nunit_path = ENV['NUNIT_PATH']
-fail_with_message('No NUNIT_PATH environment specified') unless nunit_path
-nunit_console_path = File.join(nunit_path, 'nunit3-console.exe')
-fail_with_message('nunit3-console.exe not found') unless File.exist?(nunit_console_path)
+nunit_path = ENV['NUNIT_3_PATH']
+puts_fail('No NUNIT_3_PATH environment specified') unless nunit_path
 
-builder = Builder.new(options[:project], options[:configuration], options[:platform], 'android')
+nunit_console_path = File.join(nunit_path, 'nunit3-console.exe')
+puts_fail('nunit3-console.exe not found') unless File.exist?(nunit_console_path)
+
+
+builder = Builder.new(options[:project], options[:configuration], options[:platform], [Api::ANDROID])
 begin
-  builder.build
   builder.build_test
 rescue => ex
-  error_with_message(ex.inspect.to_s)
-  error_with_message('--- Stack trace: ---')
-  error_with_message(ex.backtrace.to_s)
+  puts_error(ex.inspect.to_s)
+  puts_error('--- Stack trace: ---')
+  puts_error(ex.backtrace.to_s)
   exit(1)
 end
 
 output = builder.generated_files
-fail_with_message 'No output generated' if output.nil? || output.empty?
+puts_fail 'No output generated' if output.nil? || output.empty?
 
 any_uitest_built = false
 
 output.each do |_, project_output|
+  api = project_output[:api]
+  next unless api.eql? Api::ANDROID
+
   apk = project_output[:apk]
   uitests = project_output[:uitests]
-
   next if apk.nil? || uitests.nil?
 
   ENV['ANDROID_APK_PATH'] = File.expand_path(apk)
@@ -144,13 +128,11 @@ output.each do |_, project_output|
   uitests.each do |dll_path|
     any_uitest_built = true
 
-    puts
-    puts "\e[34mRunning UITest agains #{apk}\e[0m"
+    puts_info "Running UITest agains #{apk}"
 
     params = [
       @mono,
       nunit_console_path,
-      '-verbose',
       dll_path
     ]
     params << "--test=\"#{options[:test_to_run]}\"" unless options[:test_to_run].nil?
@@ -158,40 +140,56 @@ output.each do |_, project_output|
     command = params.join(' ')
 
     puts command
-    system(command)
+    success = system(command)
 
-    unless $?.success?
+    #
+    # Process output
+    result_log = ''
+    if File.exist? @result_log_path
       file = File.open(@result_log_path)
-      contents = file.read
+      result_log = file.read
       file.close
 
-      doc = Nokogiri::XML(contents)
-      failed_tests = doc.xpath('//test-case[@result="Failed"]')
-
-      unless failed_tests.empty?
-        puts "\e[34mParsed TestResults.xml\e[0m"
-        failed_tests.each do |failed_test|
-          puts ""
-          puts "\e[31m#{failed_test['name']}\e[0m"
-          puts "\e[31m#{failed_test.xpath('./failure/message').text}\e[0m"
-          puts "Stack trace:"
-          puts failed_test.xpath('./failure/stack-trace').text
-          puts
-        end
-        fail_with_message("UITest execution failed")
-      end
+      system("envman add --key BITRISE_XAMARIN_TEST_FULL_RESULTS_TEXT --value \"#{result_log}\"") if result_log.to_s != ''
+      puts_details "Logs are available at path: #{@result_log_path}"
+      puts
     end
+
+    next if success
+
+    doc = Nokogiri::XML(result_log)
+    failed_tests = doc.xpath('//test-case[@result="Failed"]')
+
+    if !failed_tests.empty?
+      puts_info 'Parsed TestResults.xml'
+
+      failed_tests.each do |failed_test|
+        puts
+        puts_error failed_test['name'].to_s
+        puts_error failed_test.xpath('./failure/message').text.to_s
+
+        puts 'Stack trace:'
+        puts failed_test.xpath('./failure/stack-trace').text
+        puts
+      end
+    else
+      puts
+      puts result_log
+      puts
+    end
+
+    puts_fail('UITest execution failed')
   end
 
   # Set output envs
-  puts "\e[32mUITests finished with success\e[0m"
   system('envman add --key BITRISE_XAMARIN_TEST_RESULT --value succeeded')
+  puts_done 'UITests finished with success'
 
-  puts "Logs are available at: #{@result_log_path}"
   system("envman add --key BITRISE_XAMARIN_TEST_FULL_RESULTS_TEXT --value #{@result_log_path}") if @result_log_path
+  puts_details "Logs are available at: #{@result_log_path}"
 end
 
 unless any_uitest_built
   puts "generated_files: #{output}"
-  fail_with_message 'No xcarchive or test dll found in outputs'
+  puts_fail 'No apk or test dll found in outputs'
 end

@@ -3,18 +3,30 @@ summary: Xamarin android Test
 description: |-
   Xamarin android Test
 
-  Use configuration-platform combination for automatig tests, which:
-  * Do not 'Use Shared Mono runtime' see: PROJECT_TO_TEST/Options/Build/Android Build/General/Packaging and Deployment
-  # * Use 'Enable developer instarumentation (debugging and profiling)' see: PROJECT_TO_TEST/Options/Build/Android Build/General/Debugging Options
+  Use solution configuration-platform combination for automatig tests, which maps to an android project configuration-platform combination, which:
 
-  Add following to ConfigureApp.Android:
-  * string apkPath = Environment.GetEnvironmentVariable ("ANDROID_APK_PATH");
-  * string emulatorSerial = Environment.GetEnvironmentVariable ("ANDROID_EMULATOR_SERIAL"); // if more then one emulator running
-  * return ConfigureApp
-          .Android
-          .ApkFile (apkPath)
-          .DeviceSerial(emulatorSerial) // if more then one emulator running
-          .StartApp();
+  * DO NOT 'Use Shared Mono runtime' see: PROJECT_TO_TEST/Options/Build/Android Build/General/Packaging and Deployment
+  * Use 'Enable developer instarumentation (debugging and profiling)' see: PROJECT_TO_TEST/Options/Build/Android Build/General/Debugging Options
+
+  Initialize you android app in your UITest project as follows:
+
+  ```
+  AndroidAppConfigurator androidConfigurator = ConfigureApp.Android;
+
+  string apkPath = Environment.GetEnvironmentVariable("ANDROID_APK_PATH");
+  if (!string.IsNullOrEmpty(apkPath))
+  {
+    androidConfigurator.ApkFile(apkPath);
+  }
+
+  string emulatorSerial = Environment.GetEnvironmentVariable("BITRISE_EMULATOR_SERIAL");
+  if (!string.IsNullOrEmpty(emulatorSerial))
+  {
+    androidConfigurator.DeviceSerial(emulatorSerial);
+  }
+
+  return androidConfigurator.StartApp();
+  ```
 website: https://github.com/bitrise-steplib/steps-xamarin-android-test
 source_code_url: https://github.com/bitrise-steplib/steps-xamarin-android-test
 support_url: https://github.com/bitrise-steplib/steps-xamarin-android-test/issues
@@ -26,28 +38,34 @@ type_tags: []
 is_requires_admin_user: false
 is_always_run: false
 is_skippable: false
-dependencies: []
-run_if: ""
+deps:
+  brew:
+  - name: go
+  apt_get:
+  - name: golang
+    bin_name: go
+toolkit:
+  go:
+    package_name: github.com/bitrise-steplib/steps-xamarin-android-test
 inputs:
   - xamarin_project: $BITRISE_PROJECT_PATH
     opts:
-      title: Path to Xamarin Project
+      title: Path to Xamarin Solution
       description: |
-        Path to Xamarin Project
+        Path to Xamarin Solution
       is_required: true
-      is_expand: true
   - xamarin_configuration: Release
     opts:
-      title: Xamarin project configuration
+      title: Xamarin solution configuration
       description: |
-        Xamarin project configuration
+        Xamarin solution configuration
       is_required: true
       is_expand: true
   - xamarin_platform: Any CPU
     opts:
-      title: Xamarin platform
+      title: Xamarin solution platform
       description: |
-        Xamarin platform
+        Xamarin solution platform
       is_required: true
       is_expand: true
   - test_to_run:

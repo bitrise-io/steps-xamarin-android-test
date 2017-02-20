@@ -27,6 +27,8 @@ description: |-
 
   return androidConfigurator.StartApp();
   ```
+
+  Add Internet permission to you Android app.
 website: https://github.com/bitrise-steplib/steps-xamarin-android-test
 source_code_url: https://github.com/bitrise-steplib/steps-xamarin-android-test
 support_url: https://github.com/bitrise-steplib/steps-xamarin-android-test/issues

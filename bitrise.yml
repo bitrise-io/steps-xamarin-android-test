@@ -9,6 +9,7 @@ app:
   - BITRISE_PROJECT_PATH: Multiplatform.sln
   - BITRISE_XAMARIN_CONFIGURATION: Release
   - BITRISE_XAMARIN_PLATFORM: Any CPU
+
   - BITRISE_EMULATOR_NAME: Nexus_4_API_23
 
 workflows:
@@ -22,8 +23,7 @@ workflows:
         inputs:
         - content: |-
             #!/bin/bash
-            set -e
-            set -v
+            set -ex
             rm -rf ./_tmp
     - change-workdir:
         title: Switch working dir to test / _tmp dir
@@ -31,6 +31,14 @@ workflows:
         inputs:
         - path: ./_tmp
         - is_create_path: true
+    - create-android-emulator:
+        run_if: .IsCI
+        inputs:
+        - name: "Emulator"
+    - start-android-emulator:
+        inputs:
+        - emulator_options: -no-boot-anim
+        - wait_for_boot: "false"
     - git-clone:
         run_if: true
         inputs:
@@ -41,21 +49,16 @@ workflows:
         - branch: "cross-platform-uitest"
         - pull_request_id: ""
         - clone_depth: ""
-    - certificate-and-profile-installer: {}
+    - certificate-and-profile-installer:
     - nuget-restore:
-    - create-android-emulator:
-        run_if: .IsCI
-        inputs:
-        - name: "Emulator"
-    - start-android-emulator:
-        inputs:
-        - emulator_options: -no-boot-anim
+    - wait-for-android-emulator:
     - path::./:
         title: Step test
         inputs:
         - test_to_run: Multiplatform.UItest.Tests(Android)
     - script:
         title: Step output test
+        is_always_run: true
         inputs:
         - content: |-
             echo "BITRISE_XAMARIN_TEST_RESULT: $BITRISE_XAMARIN_TEST_RESULT"

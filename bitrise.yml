@@ -38,6 +38,7 @@ workflows:
     - start-android-emulator:
         inputs:
         - emulator_options: -no-boot-anim
+        - skin: "768x1280"
         - wait_for_boot: "false"
     - git-clone:
         run_if: true

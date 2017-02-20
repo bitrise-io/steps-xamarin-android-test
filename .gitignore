@@ -1,6 +1,7 @@
 .bitrise.secrets.yml
 TestResult.xml
 .idea/
+_tmp/
 
 
 

@@ -81,6 +81,10 @@ func (configs ConfigsModel) validate() error {
 		return fmt.Errorf("EmulatorSerial - %s", err)
 	}
 
+	if err := input.ValidateWithOptions(configs.BuildTool, "msbuild", "xbuild", "mdtool"); err != nil {
+		return fmt.Errorf("BuildTool - %s", err)
+	}
+
 	return nil
 }
 

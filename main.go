@@ -210,6 +210,9 @@ func main() {
 	if err != nil {
 		failf("Failed to collect test project output, error: %s", err)
 	}
+	if len(testProjectOutputMap) == 0 {
+		failf("No testable output generated")
+	}
 	// ---
 
 	//

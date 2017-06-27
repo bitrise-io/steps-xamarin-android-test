@@ -1,6 +1,21 @@
-## Changelog (Current version: 1.0.0)
+## Changelog (Current version: 1.1.0)
 
 -----------------
+
+### 1.1.0 (2017 Jun 27)
+
+* [c24cac9] prepare for 1.1.0
+* [8b78b19] Merge pull request #20 from bitrise-steplib/input-grouping
+* [d62154f] step.yml update
+* [30ffc6a] input grouping and reordering
+* [e63ab44] Merge pull request #19 from bitrise-steplib/build-tool
+* [008e8cd] xamarin uitest command fix
+* [aefc058] fail if no tesatble output generated
+* [180dd50] step.yml fix
+* [6d092e2] buildtools is required
+* [7376e81] use msbuild
+* [21de518] specify buildtool to use
+* [90ab66e] Add internet permission
 
 ### 1.0.0 (2017 Feb 20)
 
@@ -28,4 +43,4 @@
 
 -----------------
 
-Updated: 2017 Feb 20
+Updated: 2017 Jun 27

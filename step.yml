@@ -50,41 +50,43 @@ toolkit:
   go:
     package_name: github.com/bitrise-steplib/steps-xamarin-android-test
 inputs:
+  - emulator_serial: $BITRISE_EMULATOR_SERIAL
+    opts:
+      category: Testing
+      title: "Emulator serial to boot"
+      description: |
+        Emulator to boot
+      is_required: true
+  - test_to_run:
+    opts:
+      category: Testing
+      title: "Test name to run"
+      description: |
+        Comma-separated list of names of tests to run.
+        If not specified all tests will run.
+
+        Format example: `Multiplatform.UItest.Tests(Android)`
   - xamarin_project: $BITRISE_PROJECT_PATH
     opts:
+      category: Config
       title: Path to Xamarin Solution
       description: |
         Path to Xamarin Solution
       is_required: true
   - xamarin_configuration: Release
     opts:
+      category: Config
       title: Xamarin solution configuration
       description: |
         Xamarin solution configuration
       is_required: true
-      is_expand: true
   - xamarin_platform: Any CPU
     opts:
+      category: Config
       title: Xamarin solution platform
       description: |
         Xamarin solution platform
       is_required: true
-      is_expand: true
-  - test_to_run:
-    opts:
-      title: "Test name to run"
-      description: |
-        Comma-separated list of names of tests to run.
-        If not specified all tests will run.
-      is_required: false
-      is_expand: true
-  - emulator_serial: $BITRISE_EMULATOR_SERIAL
-    opts:
-      title: "Emulator serial to boot"
-      description: |
-        Emulator to boot
-      is_required: true
-      is_expand: true
   - build_tool: "xbuild"
     opts:
       category: Debug

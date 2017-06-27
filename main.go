@@ -21,12 +21,12 @@ import (
 
 // ConfigsModel ...
 type ConfigsModel struct {
+	EmulatorSerial string
+	TestToRun      string
+
 	XamarinSolution      string
 	XamarinConfiguration string
 	XamarinPlatform      string
-
-	TestToRun      string
-	EmulatorSerial string
 
 	BuildTool string
 	DeployDir string
@@ -34,12 +34,12 @@ type ConfigsModel struct {
 
 func createConfigsModelFromEnvs() ConfigsModel {
 	return ConfigsModel{
+		EmulatorSerial: os.Getenv("emulator_serial"),
+		TestToRun:      os.Getenv("test_to_run"),
+
 		XamarinSolution:      os.Getenv("xamarin_project"),
 		XamarinConfiguration: os.Getenv("xamarin_configuration"),
 		XamarinPlatform:      os.Getenv("xamarin_platform"),
-
-		TestToRun:      os.Getenv("test_to_run"),
-		EmulatorSerial: os.Getenv("emulator_serial"),
 
 		BuildTool: os.Getenv("build_tool"),
 		DeployDir: os.Getenv("BITRISE_DEPLOY_DIR"),
@@ -47,38 +47,36 @@ func createConfigsModelFromEnvs() ConfigsModel {
 }
 
 func (configs ConfigsModel) print() {
-	log.Infof("Build Configs:")
+	log.Infof("Testing:")
+
+	log.Printf("- EmulatorSerial: %s", configs.EmulatorSerial)
+	log.Printf("- TestToRun: %s", configs.TestToRun)
+
+	log.Infof("Configs:")
 
 	log.Printf("- XamarinSolution: %s", configs.XamarinSolution)
 	log.Printf("- XamarinConfiguration: %s", configs.XamarinConfiguration)
 	log.Printf("- XamarinPlatform: %s", configs.XamarinPlatform)
 
-	log.Infof("Xamarin UITest Configs:")
-
-	log.Printf("- TestToRun: %s", configs.TestToRun)
-	log.Printf("- EmulatorSerial: %s", configs.EmulatorSerial)
-
-	log.Infof("Other Configs:")
+	log.Infof("Debug:")
 
 	log.Printf("- BuildTool: %s", configs.BuildTool)
 	log.Printf("- DeployDir: %s", configs.DeployDir)
 }
 
 func (configs ConfigsModel) validate() error {
+	if err := input.ValidateIfNotEmpty(configs.EmulatorSerial); err != nil {
+		return fmt.Errorf("EmulatorSerial - %s", err)
+	}
+
 	if err := input.ValidateIfPathExists(configs.XamarinSolution); err != nil {
 		return fmt.Errorf("XamarinSolution - %s", err)
 	}
-
 	if err := input.ValidateIfNotEmpty(configs.XamarinConfiguration); err != nil {
 		return fmt.Errorf("XamarinConfiguration - %s", err)
 	}
-
 	if err := input.ValidateIfNotEmpty(configs.XamarinPlatform); err != nil {
 		return fmt.Errorf("XamarinPlatform - %s", err)
-	}
-
-	if err := input.ValidateIfNotEmpty(configs.EmulatorSerial); err != nil {
-		return fmt.Errorf("EmulatorSerial - %s", err)
 	}
 
 	if err := input.ValidateWithOptions(configs.BuildTool, "msbuild", "xbuild", "mdtool"); err != nil {

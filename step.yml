@@ -85,6 +85,17 @@ inputs:
         Emulator to boot
       is_required: true
       is_expand: true
+  - build_tool: "xbuild"
+    opts:
+      category: Debug
+      title: (Experimental) Which tool to use for building?
+      description: |-
+        Which tool to use for building?
+      value_options:
+      - xbuild
+      - msbuild
+      - mdtool
+      is_required: true
 outputs:
 - BITRISE_XAMARIN_TEST_RESULT:
   opts:

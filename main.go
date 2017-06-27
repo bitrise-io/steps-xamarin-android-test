@@ -128,11 +128,9 @@ func parseErrorFromResultLog(content string) (string, error) {
 
 func failf(format string, v ...interface{}) {
 	log.Errorf(format, v...)
-
 	if err := tools.ExportEnvironmentWithEnvman("BITRISE_XAMARIN_TEST_RESULT", "failed"); err != nil {
 		log.Warnf("Failed to export environment: %s, error: %s", "BITRISE_XAMARIN_TEST_RESULT", err)
 	}
-
 	os.Exit(1)
 }
 

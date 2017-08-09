@@ -1,6 +1,12 @@
-## Changelog (Current version: 1.1.0)
+## Changelog (Current version: 1.2.0)
 
 -----------------
+
+### 1.2.0 (2017 Aug 09)
+
+* [0075814] prepare for 1.2.0
+* [1cb6ac3] Merge pull request #21 from bitrise-steplib/mdtool
+* [dbaaa8e] removed mdtool
 
 ### 1.1.0 (2017 Jun 27)
 
@@ -43,4 +49,4 @@
 
 -----------------
 
-Updated: 2017 Jun 27
+Updated: 2017 Aug 09

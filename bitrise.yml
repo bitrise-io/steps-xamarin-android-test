@@ -33,15 +33,6 @@ workflows:
         inputs:
         - path: ./_tmp
         - is_create_path: true
-    - create-android-emulator:
-        run_if: .IsCI
-        inputs:
-        - name: "Emulator"
-    - start-android-emulator:
-        inputs:
-        - emulator_options: -no-boot-anim
-        - skin: "768x1280"
-        - wait_for_boot: "false"
     - git-clone:
         run_if: true
         inputs:
@@ -52,6 +43,16 @@ workflows:
         - branch: "master"
         - pull_request_id: ""
         - clone_depth: ""
+    - install-missing-android-tools@2.3.7: {}
+    - create-android-emulator:
+        run_if: .IsCI
+        inputs:
+        - name: "Emulator"
+    - start-android-emulator:
+        inputs:
+        - emulator_options: -no-boot-anim
+        - skin: "768x1280"
+        - wait_for_boot: "false"
     - certificate-and-profile-installer:
     - nuget-restore:
     - wait-for-android-emulator:

@@ -38,7 +38,6 @@ workflows:
         - content: |-
             #!/bin/bash
             git clone -b master $SAMPLE_APP_URL .
-    - install-missing-android-tools@2.3.7: {}
     - create-android-emulator:
         run_if: .IsCI
         inputs:

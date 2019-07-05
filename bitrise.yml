@@ -33,7 +33,7 @@ workflows:
         inputs:
         - path: ./_tmp
         - is_create_path: true
-        - script:
+    - script:
         inputs:
         - content: |-
             #!/bin/bash

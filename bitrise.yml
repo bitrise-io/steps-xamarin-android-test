@@ -36,15 +36,7 @@ workflows:
         - content: |-
             #!/bin/bash
             git clone -b master $SAMPLE_APP_URL .
-    - script:
-        inputs:
-        - content: |-
-            #!/bin/bash
-            FILE=~/.android/repositories.cfg
-            if [ ! -f "$FILE" ]; then
-                touch $FILE
-            fi
-    - avd-manager@0.9.2:
+    - avd-manager:
         title: Step Test
         inputs:
         - version: 26

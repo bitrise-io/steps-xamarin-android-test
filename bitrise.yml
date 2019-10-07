@@ -15,6 +15,14 @@ workflows:
     before_run:
     - audit-this-step
     steps:
+    - script:
+        inputs:
+        - content: |
+            #!/bin/bash
+            $ANDROID_HOME/tools/bin/sdkmanager --install "emulator"
+            $ANDROID_HOME/tools/bin/sdkmanager --install "system-images;android-29;google_apis;x86"
+            echo "no" | $ANDROID_HOME/tools/bin/avdmanager --verbose create avd --force --name "pixel" --device "pixel" --package "system-images;android-29;google_apis;x86" --tag "google_apis" --abi "x86"
+            $ANDROID_HOME/emulator/emulator-headless @pixel -no-boot-anim -netdelay none -no-snapshot -wipe-data -verbose -show-kernel -no-audio -gpu swiftshader_indirect -no-snapshot &
     - go-list:
     - golint:
     - errcheck:
@@ -36,27 +44,11 @@ workflows:
         - content: |-
             #!/bin/bash
             git clone -b master $SAMPLE_APP_URL .
-    - avd-manager:
-        title: Step Test
-        inputs:
-        - version: 26
     - script:
         inputs:
         - content: |
             #!/bin/bash
-            set -ex
-            if [ "$BITRISE_EMULATOR_SERIAL" = "emulator-5554" ]
-            then
-              exit 0
-            else
-              exit 1
-            fi
-    - wait-for-android-emulator: {}
-    - script:
-        inputs:
-        - content: |
-            #!/bin/bash
-            sleep 20
+            sleep 40
     - certificate-and-profile-installer:
     - nuget-restore:
     - wait-for-android-emulator:

@@ -51,7 +51,6 @@ workflows:
             sleep 40
     - certificate-and-profile-installer:
     - nuget-restore:
-    - wait-for-android-emulator:
     - path::./:
         title: Step test
         inputs:

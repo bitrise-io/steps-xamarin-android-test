@@ -36,7 +36,7 @@ workflows:
         - content: |-
             #!/bin/bash
             git clone -b master $SAMPLE_APP_URL .
-    - avd-manager:
+    - git::https://github.com/bitrise-steplib/steps-avd-manager@master:
         title: Step Test
         inputs:
         - version: 26

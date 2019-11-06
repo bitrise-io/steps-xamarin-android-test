@@ -39,7 +39,7 @@ workflows:
     - git::https://github.com/bitrise-steplib/steps-avd-manager@master:
         title: Step Test
         inputs:
-        - version: 26
+        - version: 29
     - script:
         inputs:
         - content: |

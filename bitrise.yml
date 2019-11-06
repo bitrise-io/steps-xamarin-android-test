@@ -40,23 +40,6 @@ workflows:
         title: Step Test
         inputs:
         - version: 29
-    - script:
-        inputs:
-        - content: |
-            #!/bin/bash
-            set -ex
-            if [ "$BITRISE_EMULATOR_SERIAL" = "emulator-5554" ]
-            then
-              exit 0
-            else
-              exit 1
-            fi
-    - wait-for-android-emulator: {}
-    - script:
-        inputs:
-        - content: |
-            #!/bin/bash
-            sleep 20
     - certificate-and-profile-installer:
     - nuget-restore:
     - wait-for-android-emulator:
@@ -65,6 +48,7 @@ workflows:
         inputs:
         - test_to_run: Multiplatform.UItest.Tests(Android)
         - build_tool: msbuild
+        - emulator_serial: "emulator-5554"
     - script:
         title: Step output test
         is_always_run: true

@@ -49,7 +49,6 @@ workflows:
         inputs:
         - test_to_run: Multiplatform.UItest.Tests(Android)
         - build_tool: msbuild
-        - emulator_serial: "emulator-5554"
     - script:
         title: Step output test
         is_always_run: true
